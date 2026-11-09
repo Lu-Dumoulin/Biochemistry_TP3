@@ -28,6 +28,12 @@ curl -fsSL https://install.julialang.org | sh
 
 Answer the questions with the default choice (press Enter), then **close and reopen the terminal**.
 
+If `julia` is then not found, add it to your PATH yourself (on Linux, replace `~/.zshrc` by `~/.bashrc`), and reopen the terminal:
+
+```sh
+echo 'export PATH="$HOME/.juliaup/bin:$PATH"' >> ~/.zshrc
+```
+
 **Windows** — open *PowerShell* and paste:
 
 ```powershell
@@ -93,7 +99,7 @@ The notebook `00_start_here` explains Pluto in more detail, with a short bridge 
 
 | Problem | What to do |
 |:---|:---|
-| `julia` is not recognized | Close and reopen the terminal after installing. On Windows, restart the computer if needed. |
+| `julia` is not recognized | Close and reopen the terminal after installing. On macOS/Linux, add Julia to your PATH (section 1). On Windows, restart the computer if needed. |
 | `MethodError` when starting Pluto | Write `Pluto.run(notebook="...")` with `notebook=`, not `Pluto.run("...")`. |
 | `No such file` / the notebook is not found | The terminal is not in the course folder: see step 4.1, or give the full path to the notebook. |
 | The first opening seems stuck | The packages are being prepared: wait a few minutes, with an internet connection. The progress is shown in the terminal. |
