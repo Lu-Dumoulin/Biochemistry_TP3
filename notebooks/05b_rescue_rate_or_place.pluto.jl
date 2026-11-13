@@ -78,12 +78,6 @@ A **kymograph** is a picture of one microtubule over time: take the intensity al
 4. **Trace 2 or 3 kymographs by hand**, then go on to part 2.
 """
 
-# ╔═╡ 18b58ecf-0d11-4625-91b4-cca974fca62f
-movie_dir = mkpath(joinpath(@__DIR__, "..", "data", "movies"));
-
-# ╔═╡ a607940b-82f7-4f0c-a4eb-0d7c210bace4
-public_movie_dir = joinpath(@__DIR__, "..", "data", "test_movie");
-
 # ╔═╡ c3e71451-a4dc-4e3e-95a4-e8045d5a8121
 md"""
 **Lines.** This is the brightest value of each pixel over the whole movie: each microtubule appears at its longest. The proposed lines are a first guess (microtubules that slide or touch another one are left out). Click a pair of points per microtubule: **first at the end that does not grow** (the seed, green square), **then past the furthest tip**. Leave out microtubules that cross another one, touch another one, or leave the image. *Undo last click* and *Clear* correct the lines.
@@ -117,6 +111,228 @@ md"""
 
 The same analysis as afternoon 2: a speed is a length change divided by the time in that state; a rate is a number of events divided by the time at risk (growing time for catastrophes, shrinking time for rescues). The intervals come from the number of events: with few events, they are wide.
 """
+
+# ╔═╡ 30774495-5626-4a9c-9ff8-2a0d5f43fb2b
+md"""
+**Model A with your rates.** Model A has four numbers: ``v_g``, ``v_s``, ``k_\text{cat}`` and ``k_\text{res}``. With them it predicts, through ``r = v_g\,k_\text{res} / (v_s\,k_\text{cat})``:
+
+* how often a shrinkage is rescued before it reaches the seed: a fraction ``r`` (if ``r < 1``);
+* how much a long growth is followed by a long shrinkage: the correlation ``C_{gs} = (1-r)/(1+r)``;
+* the mean length at long times, ``\langle L\rangle = \dfrac{v_g}{k_\text{cat}}\,\dfrac{1}{1-r}``, if ``r < 1``; if ``r > 1``, growth without limit.
+
+These are predictions: the measured columns do not use them. The measured mean length leaves out the waiting time at the seed after a complete shrinkage: model A regrows at once.
+"""
+
+# ╔═╡ b4770758-1660-411f-b5f7-c815ffda534a
+md"""
+**Does it look the same?** Your microtubules (left) and microtubules simulated by model A with your rates (right), over the same time. $(@bind sim_runs CounterButton("New model A runs"))
+"""
+
+# ╔═╡ aae881a0-4022-48ec-abfc-17d8fe70e917
+md"""
+✏️ **Part 2 notes.** Which predictions of model A agree with your measurements, which do not? Which differences could come from too few events?
+
+...
+"""
+
+# ╔═╡ 56da606e-a7b1-43e7-ae7b-26dff3386883
+md"""
+## 3. All 46 kymographs of three movies
+
+We extracted one kymograph per isolated microtubule from three complete movies of Mireia (same conditions), and kept 46 clean ones. Each kymograph opens with an **automatic tracing** of its right edge (red line). **Check a few of them** against the image, as in part 1: click on a wrong corner to remove it, click where a corner is missing to add it (corners stay in time order). *↺ Automatic tracing* restores it. 9 kymographs have no automatic tracing, because it failed on them: trace them if you have time.
+
+The tables below use your corrections where you made some, and the automatic tracing everywhere else. The dashed blue line marks the end of the seed, as assumed by the automatic tracing (31 px from the left): move it with the *seed* slider under the image and press **Set seed** if the image says otherwise. *Data: M. Andreu-Carbó, University of Geneva, CC BY 4.0.*
+"""
+
+# ╔═╡ f7682db7-7b44-4834-be19-95d142f1086a
+md"""
+**A few kymographs, or many?** Your own traces (part 2) next to all the kymographs of the three movies. Compare the numbers of events and the widths of the intervals.
+"""
+
+# ╔═╡ 46b42a51-a407-49fb-9a63-a1d85b5e99a6
+question_box(md"""
+**Where does model A work, and where does it fail?** With many events, which of its predictions agree with the movies? Look at the correlation ``C_{gs}`` between a growth and the next shrinkage: what would make a long growth be followed by a long shrinkage, more often than model A predicts?
+""")
+
+# ╔═╡ fcb74759-7c25-4eeb-9559-b2acc40d7b12
+md"""
+✏️ **Part 3 notes.** What changed with many kymographs? Where does model A work, where does it fail?
+
+...
+"""
+
+# ╔═╡ fe12e052-d42d-414f-acb9-a13b200a3415
+md"""
+## 4. Your own movies
+
+If you recorded movies in the experimental practical, analyse them with the tools of part 1. The movie must be an **uncompressed TIFF stack** (in Fiji: *File > Save As > Tiff...*). Upload it below, or copy it into the folder `data/movies/` of the course folder (better above about 100 MB) and press *Refresh the list*. It then appears in the movie menu of part 1: choose it there, check its calibration, give it a condition label, draw the lines and trace. Its rates appear in the table of part 2, under its label.
+
+Upload a movie: $(@bind movie_upload FilePicker()) $(@bind movie_refresh CounterButton("Refresh the list"))
+"""
+
+# ╔═╡ 13ff71e4-2b29-4370-a76b-d6021114c40d
+md"""
+# Part II — The papers
+
+## 5. The papers in plain words
+
+Two papers of the University of Geneva studied what happens when the motor protein **kinesin-1** walks on microtubules. You do not need to read them: here are their main points.
+
+* J. Schaer, M. Andreu-Carbó, K. Kruse and C. Aumeier, *The effect of motor-induced shaft dynamics on microtubule stability and length*, Biophys. J. 122, 346–359 (2023). [Article](https://doi.org/10.1016/j.bpj.2022.12.010)
+* M. Andreu-Carbó, S. Fernandes, M.-C. Velluz, K. Kruse and C. Aumeier, *Motor usage imprints microtubule stability along the shaft*, Dev. Cell 57, 5–18 (2022). [Article](https://doi.org/10.1016/j.devcel.2021.11.019)
+
+1. **The experiment.** Microtubules grow from seeds in vitro for 45 min (8 µM tubulin, 37 °C), with 0, 1 or 2 nM kinesin-1 (up to 5 nM in the second paper). Without kinesin-1, a shrinking microtubule is rarely rescued: it usually shrinks back to the seed.
+2. **What the motors change.** With kinesin-1, rescues become more frequent. Growth speed, shrinkage speed and catastrophe rate do not change.
+3. **Longer microtubules.** The mean length after 45 min rises from 7.3 ± 5.1 µm (0 nM) to 13.5 ± 8.1 µm (1 nM) and 19 ± 11.6 µm (2 nM). At 2 nM it is still rising after 45 min: near 2 nM, microtubules may stop having a typical length and grow without limit.
+4. **Why.** Walking motors damage the shaft, and fresh GTP-tubulin is built into the damaged places: **exchange sites**. A shrinking microtubule can be rescued where it reaches such a site.
+5. **Model and experiment.** A model of this mechanism reproduces the kymographs and the rise of the length with kinesin-1, but its mean lengths are **shorter than the measured ones**: microtubules shorter than about 1 µm are hard to see, and the lengths include the growth at both ends of the seed.
+6. **Shrinkages rescued:** 22 % without kinesin-1 (85 of 384), 61 % with 2 nM (188 of 309). The seeds have their own color in these experiments, so a rescue is easy to tell from a return to the seed.
+7. **Same averages, different microtubules.** A constant rescue rate can give the right average length, but not the right individual microtubules: with exchange sites, a long growth is followed by a long shrinkage. *(Part III.)*
+"""
+
+# ╔═╡ 42f3bedc-203b-41c9-a990-8eb1185d99bf
+md"""
+## 6. Their kymographs, analysed in the same way
+
+These are the six kymographs of Fig. 2A–C of the first paper: two for each kinesin-1 concentration. Position runs to the right (seed on the left), time runs down. They are cropped from the published figure: they come with the course data (`data/kymographs_paper/`), not from GitHub.
+
+Each kymograph opens with a **reference tracing** (automatic edge detection, red line). It is often wrong on these small images: **check it and correct it**, as in part 3. Click on a wrong corner to remove it, click where a corner is missing to add it; The dashed blue line marks the end of the seed: move it with the *seed* slider under the image and press **Set seed** if the image says otherwise. *↺ Reference tracing* restores both. The tables below use your corrections where you made some, and the reference tracing elsewhere.
+"""
+
+# ╔═╡ d348e194-e32d-4ec3-89b8-f83b715c1649
+md"""
+*The traces as length versus time. The second paper shows eight more kymographs (Fig. 2A, up to 5 nM), below: the yellow arrowheads of the published figure mark their rescues. Do you see the same trend?*
+"""
+
+# ╔═╡ 75b207b0-4a5c-4ad3-9ce6-ed6d4cddcada
+md"""
+*The papers report, with many more microtubules: growth 0.96 µm/min, shrinkage 13 µm/min and 0.30 catastrophes per min at all concentrations; about 0.5 rescue per min of shrinkage without kinesin-1, rising with it; 22 % of the shrinkages rescued at 0 nM, 61 % at 2 nM.*
+"""
+
+# ╔═╡ de17c141-b4f6-4de2-9c86-72878bc94b83
+md"""
+**Model A with these rates.** As in part 2, model A predicts a bounded length if ``r < 1``, with mean ``\langle L\rangle = \dfrac{v_g}{k_\text{cat}}\,\dfrac{1}{1-r}``, and growth without limit if ``r > 1``. The paper finds the transition near 2 nM kinesin-1. Simulate model A for 45 min, as in the experiment, and compare with the measured mean lengths.
+"""
+
+# ╔═╡ 7c2c5ddd-01b1-4c63-b746-b49e21df4ead
+@bind task3 confirm(PlutoUI.combine() do Child
+	md"""
+	Model A runs per condition: $(Child(:runs, Slider(20:20:200; default=100, show_value=true))) — duration 45 min, starting from the seed.
+	"""
+end; label="Run model A")
+
+# ╔═╡ 982adfe4-b7f5-40d8-89fa-ed257c9e9a92
+md"""
+✏️ **Part 6 notes.** Do your rates agree with the papers? Which rate changes with kinesin-1? Does model A reproduce the measured lengths? If not, look at point 5 of the summary: which lengths should model A be compared with?
+
+...
+"""
+
+# ╔═╡ 7f3b66d7-79da-40ee-9ba6-0b64e1809b0d
+md"""
+# Part III — Rescue at a constant rate, or at a place on the shaft?
+
+Model A rescues a shrinking microtubule at a constant rate, wherever its tip is. The papers propose that rescues happen at **exchange sites**, places where motors damaged the shaft and fresh GTP-tubulin was built in. This is model B.
+"""
+
+# ╔═╡ e5c403bc-f4f4-40c2-b398-b3cbb61b8691
+rescue_models_schematic()
+
+# ╔═╡ 0652e2de-f7c2-4490-8d84-e0f92f2fb3d7
+md"""
+Model B is not a new kind of model: it is **the chain of afternoon 3, with three changes**.
+
+| | afternoon 3 chain | model B (the paper) |
+|:---|:---|:---|
+| sites | T or D | T, D, and **Tx**: GTP-tubulin put back into old lattice by exchange |
+| growth and hydrolysis | T added at the plus end; each T becomes D at rate ``h`` | the same (``k_a``, ``k_\text{hyd}``); a Tx becomes D a thousand times more slowly, so Tx sites last |
+| **change 1:** catastrophe | emerges when the terminal T cap is lost | imposed: a constant rate ``k_\text{cat}``, whatever the tip (the experiment cannot see the cap) |
+| shrinkage | D subunits leave fast | sites leave one by one at rate ``k_d`` |
+| **change 2:** rescue | the shrinking tip uncovers an internal T island | the shrinking tip reaches a Tx site, and is rescued with probability ``p_\text{res}`` |
+| **change 3:** exchange | none: a D stays D | any D can become Tx at rate ``k_\times``; **the motors increase ``k_\times``** |
+| units | model units | seconds and 8 nm sites, measured in the experiment |
+"""
+
+# ╔═╡ 6e84e237-96f3-4436-b71b-2c456cfde91d
+md"""
+### Model B with the parameters of the paper
+
+Model B runs with the parameters of the paper (Table 1): ``k_a = 2`` s⁻¹ (8 nm per site, so 0.96 µm/min), ``k_d = 27`` s⁻¹ (13 µm/min), ``k_\text{cat} = 0.005`` s⁻¹, ``p_\text{res} = 0.15``, hydrolysis 0.125 s⁻¹. The motors are represented by the **exchange rate** ``k_\times``: without motors, the paper uses ``k_\times = 10^{-5}`` s⁻¹; motors increase it.
+
+Measure the effective rescue rate of model B exactly as on a kymograph: rescues divided by the time spent shrinking. Which exchange rate reproduces the rescue rate of the paper kymographs at 1 nM? At 2 nM?
+"""
+
+# ╔═╡ c7c16b38-61f3-4881-86fe-fc3a1e946720
+@bind task4 confirm(PlutoUI.combine() do Child
+	md"""
+	| | |
+	|:---|:---|
+	| exchange rate ``k_\times`` (per s) | $(Child(:kx, Select([0.0 => "0 (no exchange)", 0.5e-5 => "0.5 × 10⁻⁵", 1e-5 => "1 × 10⁻⁵ (paper, no motors)", 1.5e-5 => "1.5 × 10⁻⁵", 2e-5 => "2 × 10⁻⁵", 3e-5 => "3 × 10⁻⁵", 4e-5 => "4 × 10⁻⁵", 5e-5 => "5 × 10⁻⁵", 6e-5 => "6 × 10⁻⁵"]; default=1e-5))) |
+	| runs | $(Child(:runs, Slider(20:20:200; default=80, show_value=true))) |
+	| duration | 45 min, starting from the seed |
+	"""
+end; label="Run model B")
+
+# ╔═╡ c66bf5f0-3280-465f-bd97-a0ea5ce912bd
+md"""
+### Same averages, different microtubules?
+
+Now give model A **exactly the effective rates of model B**: the same speeds, the same catastrophe rate, and model B's effective rescue rate. If rescue only mattered on average, the two models would be indistinguishable. Compare:
+
+1. **the mean length** after 45 min, and **how often a shrinkage reaches the seed**;
+2. **the correlation between a growth and the next shrinkage** (``C_{gs}``);
+3. **where rescues happen**, as a fraction of the length at the preceding catastrophe.
+"""
+
+# ╔═╡ 0d423844-37e4-415f-bc80-3c3150575182
+question_box(md"""
+**Back to the movies.** In part 3, the measured ``C_{gs}`` was higher than model A predicts. Which model does that resemble? How many growth–shrinkage pairs would you need to be sure, and which other measurement on a kymograph could help (think about where rescues happen)?
+""")
+
+# ╔═╡ 78e20c15-f70c-4d1f-ae3e-d98772d98f90
+md"""
+✏️ **Part III notes**
+
+* What the two models share: ...
+* What differs: ...
+* What I would need to measure to tell them apart: ...
+"""
+
+# ╔═╡ cc116b13-1de0-47bc-950c-44aa7b1aa66a
+md"""
+# Discuss
+
+* Model A has four numbers. Which of its predictions did the movies confirm, and which not? Could the failures come from the measurement (part 1) rather than from the model?
+* After a return to the seed, real microtubules wait before they grow again. Model A has no such waiting time: does it matter for the rates? For the mean length?
+* Why do a few kymographs give such wide intervals? How many events would you need to measure a rescue rate to ±20 %?
+* The papers measured lengths that model A cannot reproduce. Is model A wrong, or are the lengths not the same quantity?
+* *(Part III)* Both models agree on the averages when model A is given the effective rescue rate. Why is that useful, and why is it also a trap?
+* *(Part III)* In afternoon 3, a shrinking chain was rescued when it uncovered a T subunit left behind by hydrolysis. Where along the microtubule do such rescues happen? Which of models A and B does that resemble?
+
+## Minimum output
+
+* Your rates table (part 2 or 3), with the number of events.
+* Model A's predictions next to the measurements (part 2 or 3), and your answer: where does model A work, where does it fail?
+* One figure (part 2, 3 or 6).
+* **AI log:** substantive prompt, suggestion used, check made, remaining uncertainty.
+"""
+
+# ╔═╡ c8f9dee0-176f-4e5a-b8d5-02ee395a0adc
+md"""
+**For afternoon 2.** All your traced kymographs (parts 1 and 4), the 46 kymographs of the movies (part 3) and the paper kymographs (part 6), as a segment table: open `02_connect_to_experiments`, choose *my own CSV file*, and redo its analysis on real data.
+"""
+
+# ╔═╡ e8ee54b4-b00f-4d21-a491-c23793fae91d
+let
+	home = notebook_link(joinpath(@__DIR__, "..", "Notebook.pluto.jl"), "Back to the course home page")
+	HTML("<hr>" * home.content)
+end
+
+# ╔═╡ 18b58ecf-0d11-4625-91b4-cca974fca62f
+movie_dir = mkpath(joinpath(@__DIR__, "..", "data", "movies"));
+
+# ╔═╡ a607940b-82f7-4f0c-a4eb-0d7c210bace4
+public_movie_dir = joinpath(@__DIR__, "..", "data", "test_movie");
 
 # ╔═╡ a43fdb96-551a-4b52-8a3b-bdca9d248b40
 """
@@ -178,38 +394,6 @@ function modelA_table(groups)
 	$(join(lines, "\n"))
 	""")
 end;
-
-# ╔═╡ 30774495-5626-4a9c-9ff8-2a0d5f43fb2b
-md"""
-**Model A with your rates.** Model A has four numbers: ``v_g``, ``v_s``, ``k_\text{cat}`` and ``k_\text{res}``. With them it predicts, through ``r = v_g\,k_\text{res} / (v_s\,k_\text{cat})``:
-
-* how often a shrinkage is rescued before it reaches the seed: a fraction ``r`` (if ``r < 1``);
-* how much a long growth is followed by a long shrinkage: the correlation ``C_{gs} = (1-r)/(1+r)``;
-* the mean length at long times, ``\langle L\rangle = \dfrac{v_g}{k_\text{cat}}\,\dfrac{1}{1-r}``, if ``r < 1``; if ``r > 1``, growth without limit.
-
-These are predictions: the measured columns do not use them. The measured mean length leaves out the waiting time at the seed after a complete shrinkage: model A regrows at once.
-"""
-
-# ╔═╡ b4770758-1660-411f-b5f7-c815ffda534a
-md"""
-**Does it look the same?** Your microtubules (left) and microtubules simulated by model A with your rates (right), over the same time. $(@bind sim_runs CounterButton("New model A runs"))
-"""
-
-# ╔═╡ aae881a0-4022-48ec-abfc-17d8fe70e917
-md"""
-✏️ **Part 2 notes.** Which predictions of model A agree with your measurements, which do not? Which differences could come from too few events?
-
-...
-"""
-
-# ╔═╡ 56da606e-a7b1-43e7-ae7b-26dff3386883
-md"""
-## 3. All 46 kymographs of three movies
-
-We extracted one kymograph per isolated microtubule from three complete movies of Mireia (same conditions), and kept 46 clean ones. Each kymograph opens with an **automatic tracing** of its right edge (red line). **Check a few of them** against the image, as in part 1: click on a wrong corner to remove it, click where a corner is missing to add it (corners stay in time order). *↺ Automatic tracing* restores it. 9 kymographs have no automatic tracing, because it failed on them: trace them if you have time.
-
-The tables below use your corrections where you made some, and the automatic tracing everywhere else. The dashed blue line marks the end of the seed, as assumed by the automatic tracing (31 px from the left): move it with the *seed* slider under the image and press **Set seed** if the image says otherwise. *Data: M. Andreu-Carbó, University of Geneva, CC BY 4.0.*
-"""
 
 # ╔═╡ cd0bc73a-da5d-40ee-95ab-f65973b0b56e
 ready_dir = joinpath(@__DIR__, "..", "data", "kymographs_movies");
@@ -276,6 +460,25 @@ end
 # ╔═╡ 4a4ff030-72f5-4b85-98e7-06292c6dadcd
 ready_trace, ready_seed = ready_tool isa NamedTuple ? (ready_tool.corners, ready_tool.seed) : (ready_tool, nothing);
 
+# ╔═╡ 8b8df017-5118-4aeb-ae58-dfa8aa6f098f
+if ready_info === nothing
+	md""
+else
+	let
+	cal = (; px_per_um=1 / ready_info.um_per_px, px_per_min=60 / ready_info.s_per_frame, seed_um=seed_threshold, seed_col=ready_seed)
+	t = kymograph_segments(ready_trace; cal...)
+	mine = ready_trace != ready_info.reference
+	p = plot(; xlabel="time (min)", ylabel="length from the seed (µm)", legend=:topleft, size=(640, 260), margin=4Plots.mm,
+			 title="$(ready_info.label): $(length(t.rows)) segments, $(mine ? "your tracing" : "automatic tracing")", titlefontsize=9)
+	if mine && !isempty(ready_info.reference)
+		r = kymograph_segments(ready_info.reference; cal...)
+		plot!(p, first.(r.points) ./ 60, last.(r.points); color="#c8cfd6", lw=3, label="automatic")
+	end
+	isempty(t.points) || plot!(p, first.(t.points) ./ 60, last.(t.points); color="#5d6875", marker=:circle, ms=2, msw=0, label=mine ? "yours" : "automatic")
+	isempty(t.warnings) ? p : PlutoUI.ExperimentalLayout.vbox([p, warning_box(Markdown.parse(join(t.warnings, " ")))])
+	end
+end
+
 # ╔═╡ bec0e730-a6ab-4ee8-9094-98a63de4976e
 ready_saved = let
 	if ready_info !== nothing
@@ -300,25 +503,6 @@ ready_seed_saved = let
 	time()
 end;
 
-# ╔═╡ 8b8df017-5118-4aeb-ae58-dfa8aa6f098f
-if ready_info === nothing
-	md""
-else
-	let
-	cal = (; px_per_um=1 / ready_info.um_per_px, px_per_min=60 / ready_info.s_per_frame, seed_um=seed_threshold, seed_col=ready_seed)
-	t = kymograph_segments(ready_trace; cal...)
-	mine = ready_trace != ready_info.reference
-	p = plot(; xlabel="time (min)", ylabel="length from the seed (µm)", legend=:topleft, size=(640, 260), margin=4Plots.mm,
-			 title="$(ready_info.label): $(length(t.rows)) segments, $(mine ? "your tracing" : "automatic tracing")", titlefontsize=9)
-	if mine && !isempty(ready_info.reference)
-		r = kymograph_segments(ready_info.reference; cal...)
-		plot!(p, first.(r.points) ./ 60, last.(r.points); color="#c8cfd6", lw=3, label="automatic")
-	end
-	isempty(t.points) || plot!(p, first.(t.points) ./ 60, last.(t.points); color="#5d6875", marker=:circle, ms=2, msw=0, label=mine ? "yours" : "automatic")
-	isempty(t.warnings) ? p : PlutoUI.ExperimentalLayout.vbox([p, warning_box(Markdown.parse(join(t.warnings, " ")))])
-	end
-end
-
 # ╔═╡ 483adc8a-f76c-4bb5-a06a-0cddb722132c
 "The 46 kymographs: your corrections where you made some, the automatic tracing elsewhere."
 ready_traced = let
@@ -337,32 +521,6 @@ ready_traced = let
 	end
 	out
 end;
-
-# ╔═╡ f7682db7-7b44-4834-be19-95d142f1086a
-md"""
-**A few kymographs, or many?** Your own traces (part 2) next to all the kymographs of the three movies. Compare the numbers of events and the widths of the intervals.
-"""
-
-# ╔═╡ 46b42a51-a407-49fb-9a63-a1d85b5e99a6
-question_box(md"""
-**Where does model A work, and where does it fail?** With many events, which of its predictions agree with the movies? Look at the correlation ``C_{gs}`` between a growth and the next shrinkage: what would make a long growth be followed by a long shrinkage, more often than model A predicts?
-""")
-
-# ╔═╡ fcb74759-7c25-4eeb-9559-b2acc40d7b12
-md"""
-✏️ **Part 3 notes.** What changed with many kymographs? Where does model A work, where does it fail?
-
-...
-"""
-
-# ╔═╡ fe12e052-d42d-414f-acb9-a13b200a3415
-md"""
-## 4. Your own movies
-
-If you recorded movies in the experimental practical, analyse them with the tools of part 1. The movie must be an **uncompressed TIFF stack** (in Fiji: *File > Save As > Tiff...*). Upload it below, or copy it into the folder `data/movies/` of the course folder (better above about 100 MB) and press *Refresh the list*. It then appears in the movie menu of part 1: choose it there, check its calibration, give it a condition label, draw the lines and trace. Its rates appear in the table of part 2, under its label.
-
-Upload a movie: $(@bind movie_upload FilePicker()) $(@bind movie_refresh CounterButton("Refresh the list"))
-"""
 
 # ╔═╡ 6c819691-4042-4e0a-8123-93be47945d50
 uploaded_movie = let
@@ -556,6 +714,20 @@ end
 # ╔═╡ 3d6287a2-b8d7-490c-bd13-e3685619d91e
 movie_trace, movie_seed = movie_tool isa NamedTuple ? (movie_tool.corners, movie_tool.seed) : (movie_tool, nothing);
 
+# ╔═╡ eee3b87c-ecba-4d26-86aa-f6891184d409
+if kymo_index == 0 || !(movie isa NamedTuple)
+	md""
+else
+	let
+	s = movie_settings
+	t = kymograph_segments(movie_trace; px_per_um=1 / s.um_per_px, px_per_min=60 / s.s_per_frame, seed_um=seed_threshold, seed_col=movie_seed)
+	p = plot(; xlabel="time (min)", ylabel="length from the seed (µm)", legend=false,
+			 size=(640, 240), margin=4Plots.mm, title="line $(kymo_index): $(length(t.rows)) segments", titlefontsize=9)
+	isempty(t.points) || plot!(p, first.(t.points) ./ 60, last.(t.points); color="#5d6875", marker=:circle, ms=2, msw=0)
+	isempty(t.warnings) ? p : PlutoUI.ExperimentalLayout.vbox([p, warning_box(Markdown.parse(join(t.warnings, " ")))])
+	end
+end
+
 # ╔═╡ 979c8539-d367-4908-8aad-7dc8814d7fee
 traces_saved = let
 	if movie isa NamedTuple && 1 <= kymo_index <= length(current_lines)
@@ -579,20 +751,6 @@ movie_seed_saved = let
 	end
 	time()
 end;
-
-# ╔═╡ eee3b87c-ecba-4d26-86aa-f6891184d409
-if kymo_index == 0 || !(movie isa NamedTuple)
-	md""
-else
-	let
-	s = movie_settings
-	t = kymograph_segments(movie_trace; px_per_um=1 / s.um_per_px, px_per_min=60 / s.s_per_frame, seed_um=seed_threshold, seed_col=movie_seed)
-	p = plot(; xlabel="time (min)", ylabel="length from the seed (µm)", legend=false,
-			 size=(640, 240), margin=4Plots.mm, title="line $(kymo_index): $(length(t.rows)) segments", titlefontsize=9)
-	isempty(t.points) || plot!(p, first.(t.points) ./ 60, last.(t.points); color="#5d6875", marker=:circle, ms=2, msw=0)
-	isempty(t.warnings) ? p : PlutoUI.ExperimentalLayout.vbox([p, warning_box(Markdown.parse(join(t.warnings, " ")))])
-	end
-end
 
 # ╔═╡ 06797c4e-8bdc-4f49-8134-d09c923d9f92
 "Traced kymographs of every movie of part 1 (and part 4) marked *use this movie*, grouped by condition."
@@ -660,37 +818,23 @@ let
 	modelA_table(["your traces (part 1)" => mine, "the movies, $(length(ready_traced)) kymographs" => ready_traced]) |> PlutoUI.WideCell(; max_width=1200)
 end
 
-# ╔═╡ 13ff71e4-2b29-4370-a76b-d6021114c40d
-md"""
-# Part II — The papers
-
-## 5. The papers in plain words
-
-Two papers of the University of Geneva studied what happens when the motor protein **kinesin-1** walks on microtubules. You do not need to read them: here are their main points.
-
-* J. Schaer, M. Andreu-Carbó, K. Kruse and C. Aumeier, *The effect of motor-induced shaft dynamics on microtubule stability and length*, Biophys. J. 122, 346–359 (2023). [Article](https://doi.org/10.1016/j.bpj.2022.12.010)
-* M. Andreu-Carbó, S. Fernandes, M.-C. Velluz, K. Kruse and C. Aumeier, *Motor usage imprints microtubule stability along the shaft*, Dev. Cell 57, 5–18 (2022). [Article](https://doi.org/10.1016/j.devcel.2021.11.019)
-
-1. **The experiment.** Microtubules grow from seeds in vitro for 45 min (8 µM tubulin, 37 °C), with 0, 1 or 2 nM kinesin-1 (up to 5 nM in the second paper). Without kinesin-1, a shrinking microtubule is rarely rescued: it usually shrinks back to the seed.
-2. **What the motors change.** With kinesin-1, rescues become more frequent. Growth speed, shrinkage speed and catastrophe rate do not change.
-3. **Longer microtubules.** The mean length after 45 min rises from 7.3 ± 5.1 µm (0 nM) to 13.5 ± 8.1 µm (1 nM) and 19 ± 11.6 µm (2 nM). At 2 nM it is still rising after 45 min: near 2 nM, microtubules may stop having a typical length and grow without limit.
-4. **Why.** Walking motors damage the shaft, and fresh GTP-tubulin is built into the damaged places: **exchange sites**. A shrinking microtubule can be rescued where it reaches such a site.
-5. **Model and experiment.** A model of this mechanism reproduces the kymographs and the rise of the length with kinesin-1, but its mean lengths are **shorter than the measured ones**: microtubules shorter than about 1 µm are hard to see, and the lengths include the growth at both ends of the seed.
-6. **Shrinkages rescued:** 22 % without kinesin-1 (85 of 384), 61 % with 2 nM (188 of 309). The seeds have their own color in these experiments, so a rescue is easy to tell from a return to the seed.
-7. **Same averages, different microtubules.** A constant rescue rate can give the right average length, but not the right individual microtubules: with exchange sites, a long growth is followed by a long shrinkage. *(Part III.)*
-"""
-
-# ╔═╡ 42f3bedc-203b-41c9-a990-8eb1185d99bf
-md"""
-## 6. Their kymographs, analysed in the same way
-
-These are the six kymographs of Fig. 2A–C of the first paper: two for each kinesin-1 concentration. Position runs to the right (seed on the left), time runs down. They are cropped from the published figure: they come with the course data (`data/kymographs_paper/`), not from GitHub.
-
-Each kymograph opens with a **reference tracing** (automatic edge detection, red line). It is often wrong on these small images: **check it and correct it**, as in part 3. Click on a wrong corner to remove it, click where a corner is missing to add it; The dashed blue line marks the end of the seed: move it with the *seed* slider under the image and press **Set seed** if the image says otherwise. *↺ Reference tracing* restores both. The tables below use your corrections where you made some, and the reference tracing elsewhere.
-"""
-
 # ╔═╡ eea700b3-d6aa-4c3f-9bd2-be762521a666
 kymo_dir = joinpath(@__DIR__, "..", "data", "kymographs_paper");
+
+# ╔═╡ 07b93c40-2e4a-40d9-b62b-88a1fc6387b6
+let
+	names = ["devcell_$(c)nM_$(s)" for c in (0, 1, 2, 5) for s in ("a", "b")]
+	items = [n for n in names if isfile(joinpath(kymo_dir, n * ".png"))]
+	if isempty(items)
+		md""
+	else
+		html = map(items) do n
+			data = Base64.base64encode(read(joinpath(kymo_dir, n * ".png")))
+			"""<figure style="margin:0; text-align:center"><img src="data:image/png;base64,$data" style="height:300px; image-rendering:pixelated"><figcaption>$(replace(replace(n, "devcell_" => ""), "_" => " "))</figcaption></figure>"""
+		end
+		PlutoUI.WideCell(HTML("""<div style="display:flex; flex-wrap:wrap; gap:12px">$(join(html))</div>"""); max_width=1200)
+	end
+end
 
 # ╔═╡ c2657fe2-e2f7-4fc9-976b-91f1ed6d90d3
 paper_calibration = let
@@ -705,6 +849,11 @@ paper_names = sort([n for n in keys(paper_calibration) if isfile(joinpath(kymo_d
 
 # ╔═╡ d9ea88ae-603a-490a-adbe-ae345e204997
 length(paper_names) == 6 ? md"" : danger(md"The kymographs of the papers are missing: install the course data (`data/kymographs_paper/`) given by the instructor.")
+
+# ╔═╡ 970fe899-da9e-4527-acc0-24e09ae466c7
+md"""
+Kymograph: $(@bind paper_file Select(isempty(paper_names) ? ["(none)" => "none found"] : [n => string(paper_calibration[n].nM, " nM, ", replace(paper_calibration[n].figure, "Schaer et al. 2023 " => "")) for n in paper_names])) $(@bind paper_reset CounterButton("↺ Reference tracing"))
+"""
 
 # ╔═╡ e1fab095-657b-4ae5-9a5c-4f8922afa706
 paper_reference = let
@@ -723,11 +872,6 @@ paper_seed = Dict(n => (isempty(paper_reference[n]) ? 1 : minimum(last, paper_re
 
 # ╔═╡ 83381c78-db82-476a-8b59-866fe2464b40
 paper_reset_seen = Ref(0);
-
-# ╔═╡ 970fe899-da9e-4527-acc0-24e09ae466c7
-md"""
-Kymograph: $(@bind paper_file Select(isempty(paper_names) ? ["(none)" => "none found"] : [n => string(paper_calibration[n].nM, " nM, ", replace(paper_calibration[n].figure, "Schaer et al. 2023 " => "")) for n in paper_names])) $(@bind paper_reset CounterButton("↺ Reference tracing"))
-"""
 
 # ╔═╡ feaee9e6-015e-4ad5-ba57-f814f15fd447
 paper_reset_done = let
@@ -759,6 +903,26 @@ end
 # ╔═╡ 97a52e3a-d30f-48b4-ac6b-23ba7bb9731e
 paper_trace, paper_seed_col = paper_tool isa NamedTuple ? (paper_tool.corners, paper_tool.seed) : (paper_tool, nothing);
 
+# ╔═╡ 9642c12e-2331-49c6-b03f-a0f2146bba4f
+if !haskey(paper_calibration, paper_file)
+	md""
+else
+	let
+	c = paper_calibration[paper_file]
+	cal = (; px_per_um=c.px_per_um, px_per_min=c.px_per_min, seed_um=seed_threshold, seed_col=paper_seed_col)
+	t = kymograph_segments(paper_trace; cal...)
+	mine = paper_trace != paper_reference[paper_file]
+	p = plot(; xlabel="time (min)", ylabel="length from the seed (µm)", legend=:topleft, size=(640, 260), margin=4Plots.mm,
+			 title="$(c.nM) nM: $(length(t.rows)) segments, $(mine ? "your tracing" : "reference tracing")", titlefontsize=9)
+	if mine
+		r = kymograph_segments(paper_reference[paper_file]; cal...)
+		plot!(p, first.(r.points) ./ 60, last.(r.points); color="#c8cfd6", lw=3, label="reference")
+	end
+	isempty(t.points) || plot!(p, first.(t.points) ./ 60, last.(t.points); color="#5d6875", marker=:circle, ms=2, msw=0, label=mine ? "yours" : "reference")
+	isempty(t.warnings) ? p : PlutoUI.ExperimentalLayout.vbox([p, warning_box(Markdown.parse(join(t.warnings, " ")))])
+	end
+end
+
 # ╔═╡ 952a79d9-4cc4-42cb-b483-108e36fbff4d
 paper_saved = let
 	if haskey(paper_calibration, paper_file)
@@ -782,26 +946,6 @@ paper_seed_saved = let
 	end
 	time()
 end;
-
-# ╔═╡ 9642c12e-2331-49c6-b03f-a0f2146bba4f
-if !haskey(paper_calibration, paper_file)
-	md""
-else
-	let
-	c = paper_calibration[paper_file]
-	cal = (; px_per_um=c.px_per_um, px_per_min=c.px_per_min, seed_um=seed_threshold, seed_col=paper_seed_col)
-	t = kymograph_segments(paper_trace; cal...)
-	mine = paper_trace != paper_reference[paper_file]
-	p = plot(; xlabel="time (min)", ylabel="length from the seed (µm)", legend=:topleft, size=(640, 260), margin=4Plots.mm,
-			 title="$(c.nM) nM: $(length(t.rows)) segments, $(mine ? "your tracing" : "reference tracing")", titlefontsize=9)
-	if mine
-		r = kymograph_segments(paper_reference[paper_file]; cal...)
-		plot!(p, first.(r.points) ./ 60, last.(r.points); color="#c8cfd6", lw=3, label="reference")
-	end
-	isempty(t.points) || plot!(p, first.(t.points) ./ 60, last.(t.points); color="#5d6875", marker=:circle, ms=2, msw=0, label=mine ? "yours" : "reference")
-	isempty(t.warnings) ? p : PlutoUI.ExperimentalLayout.vbox([p, warning_box(Markdown.parse(join(t.warnings, " ")))])
-	end
-end
 
 # ╔═╡ ff7446ea-7970-49f5-9ee4-54b0d4df10f4
 paper_traced = let
@@ -835,24 +979,21 @@ else
 	end
 end
 
-# ╔═╡ d348e194-e32d-4ec3-89b8-f83b715c1649
-md"""
-*The traces as length versus time. The second paper shows eight more kymographs (Fig. 2A, up to 5 nM), below: the yellow arrowheads of the published figure mark their rescues. Do you see the same trend?*
-"""
+# ╔═╡ 7908a869-8dae-41de-a180-14b2d3430935
+rates_table(["$nM nM kinesin-1" => [paper_traced[n] for n in paper_names if paper_calibration[n].nM == nM] for nM in (0, 1, 2)]) |> PlutoUI.WideCell(; max_width=1200)
 
-# ╔═╡ 07b93c40-2e4a-40d9-b62b-88a1fc6387b6
+# ╔═╡ 73f8d20a-04b1-4641-9a6a-324b318adbfd
 let
-	names = ["devcell_$(c)nM_$(s)" for c in (0, 1, 2, 5) for s in ("a", "b")]
-	items = [n for n in names if isfile(joinpath(kymo_dir, n * ".png"))]
-	if isempty(items)
-		md""
-	else
-		html = map(items) do n
-			data = Base64.base64encode(read(joinpath(kymo_dir, n * ".png")))
-			"""<figure style="margin:0; text-align:center"><img src="data:image/png;base64,$data" style="height:300px; image-rendering:pixelated"><figcaption>$(replace(replace(n, "devcell_" => ""), "_" => " "))</figcaption></figure>"""
-		end
-		PlutoUI.WideCell(HTML("""<div style="display:flex; flex-wrap:wrap; gap:12px">$(join(html))</div>"""); max_width=1200)
+	io = IOBuffer()
+	println(io, "condition,track,state,duration_s,delta_length_um,end_event,source")
+	groups = [["my traces: $k" => v for (k, v) in my_traced];
+			  "Mireia's movies (46 kymographs)" => ready_traced;
+			  ["Schaer 2023: $(paper_calibration[n].nM) nM" => [paper_traced[n]] for n in paper_names]]
+	for (cond, traced) in groups, t in traced, r in t.rows
+		println(io, join((replace(string(v), "," => " ") for v in
+						  (cond, r.track, r.state, round(r.duration_s; digits=2), round(r.delta_length_um; digits=3), r.end_event, r.source)), ","))
 	end
+	DownloadButton(take!(io), "afternoon5b_segments.csv")
 end
 
 # ╔═╡ 609c5df1-5829-4882-8c6c-fca3f2c723d0
@@ -861,19 +1002,6 @@ paper_measured = Dict(nM => reduce(vcat, [paper_traced[n].rows for n in paper_na
 
 # ╔═╡ 6705082f-5052-486c-b83d-af8a835e9d7e
 paper_rates = Dict(nM => (isempty(paper_measured[nM]) ? nothing : summarize_segments(paper_measured[nM])) for nM in (0, 1, 2));
-
-# ╔═╡ 7908a869-8dae-41de-a180-14b2d3430935
-rates_table(["$nM nM kinesin-1" => [paper_traced[n] for n in paper_names if paper_calibration[n].nM == nM] for nM in (0, 1, 2)]) |> PlutoUI.WideCell(; max_width=1200)
-
-# ╔═╡ 75b207b0-4a5c-4ad3-9ce6-ed6d4cddcada
-md"""
-*The papers report, with many more microtubules: growth 0.96 µm/min, shrinkage 13 µm/min and 0.30 catastrophes per min at all concentrations; about 0.5 rescue per min of shrinkage without kinesin-1, rising with it; 22 % of the shrinkages rescued at 0 nM, 61 % at 2 nM.*
-"""
-
-# ╔═╡ de17c141-b4f6-4de2-9c86-72878bc94b83
-md"""
-**Model A with these rates.** As in part 2, model A predicts a bounded length if ``r < 1``, with mean ``\langle L\rangle = \dfrac{v_g}{k_\text{cat}}\,\dfrac{1}{1-r}``, and growth without limit if ``r > 1``. The paper finds the transition near 2 nM kinesin-1. Simulate model A for 45 min, as in the experiment, and compare with the measured mean lengths.
-"""
 
 # ╔═╡ 92fd59d6-399f-452c-8b04-8622a1716750
 let
@@ -892,13 +1020,6 @@ let
 	""")
 end
 
-# ╔═╡ 7c2c5ddd-01b1-4c63-b746-b49e21df4ead
-@bind task3 confirm(PlutoUI.combine() do Child
-	md"""
-	Model A runs per condition: $(Child(:runs, Slider(20:20:200; default=100, show_value=true))) — duration 45 min, starting from the seed.
-	"""
-end; label="Run model A")
-
 # ╔═╡ dd6dd7f9-753c-4236-8de5-f9a520a64740
 modelA = Dict(nM => begin
 	s = paper_rates[nM]
@@ -906,7 +1027,7 @@ modelA = Dict(nM => begin
 	ok ? [simulate_switching(; vg=s.vg, vs=s.vs, catastrophe=s.catastrophe, rescue=s.rescue,
 							 t_end=45 * 60, dt=0.05, initial_length=0.0, seed=1000 + i)
 		  for i in 1:task3.runs] : nothing
-end for nM in (0, 1, 2))
+end for nM in (0, 1, 2));
 
 # ╔═╡ fb8448d9-728f-4ba1-a0f5-187b373daeea
 modelA_figure = let
@@ -932,69 +1053,31 @@ PlutoUI.WideCell(modelA_figure; max_width=1200)
 # ╔═╡ 360a7486-81bc-48dc-aa62-c0b5c0872181
 DownloadButton(repr(MIME("image/png"), modelA_figure), "afternoon5b_modelA.png")
 
-# ╔═╡ 982adfe4-b7f5-40d8-89fa-ed257c9e9a92
-md"""
-✏️ **Part 6 notes.** Do your rates agree with the papers? Which rate changes with kinesin-1? Does model A reproduce the measured lengths? If not, look at point 5 of the summary: which lengths should model A be compared with?
-
-...
-"""
-
-# ╔═╡ 7f3b66d7-79da-40ee-9ba6-0b64e1809b0d
-md"""
-# Part III — Rescue at a constant rate, or at a place on the shaft?
-
-Model A rescues a shrinking microtubule at a constant rate, wherever its tip is. The papers propose that rescues happen at **exchange sites**, places where motors damaged the shaft and fresh GTP-tubulin was built in. This is model B.
-"""
-
-# ╔═╡ e5c403bc-f4f4-40c2-b398-b3cbb61b8691
-rescue_models_schematic()
-
-# ╔═╡ 0652e2de-f7c2-4490-8d84-e0f92f2fb3d7
-md"""
-Model B is not a new kind of model: it is **the chain of afternoon 3, with three changes**.
-
-| | afternoon 3 chain | model B (the paper) |
-|:---|:---|:---|
-| sites | T or D | T, D, and **Tx**: GTP-tubulin put back into old lattice by exchange |
-| growth and hydrolysis | T added at the plus end; each T becomes D at rate ``h`` | the same (``k_a``, ``k_\text{hyd}``); a Tx becomes D a thousand times more slowly, so Tx sites last |
-| **change 1:** catastrophe | emerges when the terminal T cap is lost | imposed: a constant rate ``k_\text{cat}``, whatever the tip (the experiment cannot see the cap) |
-| shrinkage | D subunits leave fast | sites leave one by one at rate ``k_d`` |
-| **change 2:** rescue | the shrinking tip uncovers an internal T island | the shrinking tip reaches a Tx site, and is rescued with probability ``p_\text{res}`` |
-| **change 3:** exchange | none: a D stays D | any D can become Tx at rate ``k_\times``; **the motors increase ``k_\times``** |
-| units | model units | seconds and 8 nm sites, measured in the experiment |
-"""
-
-# ╔═╡ 6e84e237-96f3-4436-b71b-2c456cfde91d
-md"""
-### Model B with the parameters of the paper
-
-Model B runs with the parameters of the paper (Table 1): ``k_a = 2`` s⁻¹ (8 nm per site, so 0.96 µm/min), ``k_d = 27`` s⁻¹ (13 µm/min), ``k_\text{cat} = 0.005`` s⁻¹, ``p_\text{res} = 0.15``, hydrolysis 0.125 s⁻¹. The motors are represented by the **exchange rate** ``k_\times``: without motors, the paper uses ``k_\times = 10^{-5}`` s⁻¹; motors increase it.
-
-Measure the effective rescue rate of model B exactly as on a kymograph: rescues divided by the time spent shrinking. Which exchange rate reproduces the rescue rate of the paper kymographs at 1 nM? At 2 nM?
-"""
-
-# ╔═╡ c7c16b38-61f3-4881-86fe-fc3a1e946720
-@bind task4 confirm(PlutoUI.combine() do Child
-	md"""
-	| | |
-	|:---|:---|
-	| exchange rate ``k_\times`` (per s) | $(Child(:kx, Select([0.0 => "0 (no exchange)", 0.5e-5 => "0.5 × 10⁻⁵", 1e-5 => "1 × 10⁻⁵ (paper, no motors)", 1.5e-5 => "1.5 × 10⁻⁵", 2e-5 => "2 × 10⁻⁵", 3e-5 => "3 × 10⁻⁵", 4e-5 => "4 × 10⁻⁵", 5e-5 => "5 × 10⁻⁵", 6e-5 => "6 × 10⁻⁵"]; default=1e-5))) |
-	| runs | $(Child(:runs, Slider(20:20:200; default=80, show_value=true))) |
-	| duration | 45 min, starting from the seed |
-	"""
-end; label="Run model B")
-
 # ╔═╡ 6a41b023-0030-40b8-9713-dce878f78dbf
-modelB = [simulate_res(; kx=task4.kx, t_end=45 * 60, seed=2000 + i) for i in 1:task4.runs]
+modelB = [simulate_res(; kx=task4.kx, t_end=45 * 60, seed=2000 + i) for i in 1:task4.runs];
 
 # ╔═╡ e3b03b06-c92a-4747-baff-867d18fb7d69
-modelB_rows = reduce(vcat, [phase_segments(r; track=i) for (i, r) in enumerate(modelB)])
+modelB_rows = reduce(vcat, [phase_segments(r; track=i) for (i, r) in enumerate(modelB)]);
 
 # ╔═╡ 7b002f8e-5b5d-4382-bb87-974a9a0d3f40
-modelB_stats = summarize_segments(modelB_rows)
+modelB_stats = summarize_segments(modelB_rows);
+
+# ╔═╡ eeec5781-85e4-4de0-b58e-e40d40fb7bc6
+let
+	f(x) = round(x; sigdigits=3)
+	s = modelB_stats
+	lo, hi = poisson_interval(s.n_rescues)
+	measured_lines = join(["| $nM nM (paper kymographs) | $(paper_rates[nM] === nothing ? "–" : f(paper_rates[nM].rescue * 60)) |" for nM in (0, 1, 2)], "\n")
+	Markdown.parse("""
+	| | rescues per min |
+	|:---|---:|
+	| **model B**, ``k_\\times`` = $(task4.kx) s⁻¹ ($(s.n_rescues) rescues in $(f(s.shrinking_time / 60)) min of shrinkage) | **$(f(s.rescue * 60))** ($(f(lo / s.shrinking_time * 60)) – $(f(hi / s.shrinking_time * 60))) |
+	$measured_lines
+	""")
+end
 
 # ╔═╡ f04562e5-73eb-45d7-8610-4b10bb1ce56a
-modelB_kymograph = simulate_res(; kx=task4.kx, t_end=45 * 60, seed=2001, record_lattice=true)
+modelB_kymograph = simulate_res(; kx=task4.kx, t_end=45 * 60, seed=2001, record_lattice=true);
 
 # ╔═╡ d7174b1b-a3bb-48b7-b389-1ec78a2a5943
 let
@@ -1011,41 +1094,16 @@ let
 			size=(1100, 460), margin=4Plots.mm) |> PlutoUI.WideCell(; max_width=1200)
 end
 
-# ╔═╡ eeec5781-85e4-4de0-b58e-e40d40fb7bc6
-let
-	f(x) = round(x; sigdigits=3)
-	s = modelB_stats
-	lo, hi = poisson_interval(s.n_rescues)
-	measured_lines = join(["| $nM nM (paper kymographs) | $(paper_rates[nM] === nothing ? "–" : f(paper_rates[nM].rescue * 60)) |" for nM in (0, 1, 2)], "\n")
-	Markdown.parse("""
-	| | rescues per min |
-	|:---|---:|
-	| **model B**, ``k_\\times`` = $(task4.kx) s⁻¹ ($(s.n_rescues) rescues in $(f(s.shrinking_time / 60)) min of shrinkage) | **$(f(s.rescue * 60))** ($(f(lo / s.shrinking_time * 60)) – $(f(hi / s.shrinking_time * 60))) |
-	$measured_lines
-	""")
-end
-
-# ╔═╡ c66bf5f0-3280-465f-bd97-a0ea5ce912bd
-md"""
-### Same averages, different microtubules?
-
-Now give model A **exactly the effective rates of model B**: the same speeds, the same catastrophe rate, and model B's effective rescue rate. If rescue only mattered on average, the two models would be indistinguishable. Compare:
-
-1. **the mean length** after 45 min, and **how often a shrinkage reaches the seed**;
-2. **the correlation between a growth and the next shrinkage** (``C_{gs}``);
-3. **where rescues happen**, as a fraction of the length at the preceding catastrophe.
-"""
-
 # ╔═╡ 4f5d6dfa-c5e3-4a64-aab0-bc70eae6a994
 modelA_matched = let
 	p = modelB[1].parameters
 	vg = p.ka * p.site_nm / 1000; vs = p.kd * p.site_nm / 1000
 	[simulate_switching(; vg, vs, catastrophe=p.kcat, rescue=modelB_stats.rescue, t_end=45 * 60,
 						dt=0.05, initial_length=0.0, seed=3000 + i) for i in 1:task4.runs]
-end
+end;
 
 # ╔═╡ ca2c8560-f070-4cda-b2fa-d53dc0d55fee
-modelA_rows = reduce(vcat, [simulated_segments(r; track=i) for (i, r) in enumerate(modelA_matched)])
+modelA_rows = reduce(vcat, [simulated_segments(r; track=i) for (i, r) in enumerate(modelA_matched)]);
 
 # ╔═╡ d324be23-bb51-453c-90ad-d2266e10bbc9
 comparison = let
@@ -1062,7 +1120,7 @@ comparison = let
 	   C=(A=pair_correlation(pa.growth, pa.shrink), B=pair_correlation(pb.growth, pb.shrink)),
 	   rescue_at=(A=reduce(vcat, switching_rescue_fraction.(modelA_matched); init=Float64[]),
 				  B=reduce(vcat, [r.rescue_fraction for r in modelB]; init=Float64[])))
-end
+end;
 
 # ╔═╡ a21a80d6-3f2f-4406-bca7-d258d17c5e15
 let
@@ -1100,64 +1158,6 @@ PlutoUI.WideCell(comparison_figure; max_width=1200)
 
 # ╔═╡ 0c9c30f6-93f4-43cf-862c-b68a10faa214
 DownloadButton(repr(MIME("image/png"), comparison_figure), "afternoon5b_comparison.png")
-
-# ╔═╡ 0d423844-37e4-415f-bc80-3c3150575182
-question_box(md"""
-**Back to the movies.** In part 3, the measured ``C_{gs}`` was higher than model A predicts. Which model does that resemble? How many growth–shrinkage pairs would you need to be sure, and which other measurement on a kymograph could help (think about where rescues happen)?
-""")
-
-# ╔═╡ 78e20c15-f70c-4d1f-ae3e-d98772d98f90
-md"""
-✏️ **Part III notes**
-
-* What the two models share: ...
-* What differs: ...
-* What I would need to measure to tell them apart: ...
-"""
-
-# ╔═╡ cc116b13-1de0-47bc-950c-44aa7b1aa66a
-md"""
-# Discuss
-
-* Model A has four numbers. Which of its predictions did the movies confirm, and which not? Could the failures come from the measurement (part 1) rather than from the model?
-* After a return to the seed, real microtubules wait before they grow again. Model A has no such waiting time: does it matter for the rates? For the mean length?
-* Why do a few kymographs give such wide intervals? How many events would you need to measure a rescue rate to ±20 %?
-* The papers measured lengths that model A cannot reproduce. Is model A wrong, or are the lengths not the same quantity?
-* *(Part III)* Both models agree on the averages when model A is given the effective rescue rate. Why is that useful, and why is it also a trap?
-* *(Part III)* In afternoon 3, a shrinking chain was rescued when it uncovered a T subunit left behind by hydrolysis. Where along the microtubule do such rescues happen? Which of models A and B does that resemble?
-
-## Minimum output
-
-* Your rates table (part 2 or 3), with the number of events.
-* Model A's predictions next to the measurements (part 2 or 3), and your answer: where does model A work, where does it fail?
-* One figure (part 2, 3 or 6).
-* **AI log:** substantive prompt, suggestion used, check made, remaining uncertainty.
-"""
-
-# ╔═╡ c8f9dee0-176f-4e5a-b8d5-02ee395a0adc
-md"""
-**For afternoon 2.** All your traced kymographs (parts 1 and 4), the 46 kymographs of the movies (part 3) and the paper kymographs (part 6), as a segment table: open `02_connect_to_experiments`, choose *my own CSV file*, and redo its analysis on real data.
-"""
-
-# ╔═╡ 73f8d20a-04b1-4641-9a6a-324b318adbfd
-let
-	io = IOBuffer()
-	println(io, "condition,track,state,duration_s,delta_length_um,end_event,source")
-	groups = [["my traces: $k" => v for (k, v) in my_traced];
-			  "Mireia's movies (46 kymographs)" => ready_traced;
-			  ["Schaer 2023: $(paper_calibration[n].nM) nM" => [paper_traced[n]] for n in paper_names]]
-	for (cond, traced) in groups, t in traced, r in t.rows
-		println(io, join((replace(string(v), "," => " ") for v in
-						  (cond, r.track, r.state, round(r.duration_s; digits=2), round(r.delta_length_um; digits=3), r.end_event, r.source)), ","))
-	end
-	DownloadButton(take!(io), "afternoon5b_segments.csv")
-end
-
-# ╔═╡ e8ee54b4-b00f-4d21-a491-c23793fae91d
-let
-	home = notebook_link(joinpath(@__DIR__, "..", "Notebook.pluto.jl"), "Back to the course home page")
-	HTML("<hr>" * home.content)
-end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2500,37 +2500,19 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 # ╠═cd5a9620-6a79-4748-8e24-479037d97b27
 # ╠═211ef6d9-d20f-4d01-9ecb-ab7cc0925fac
 # ╟─0eaa9a3b-c8f6-4d7a-9f7a-6e71d3f9125d
-# ╟─18b58ecf-0d11-4625-91b4-cca974fca62f
-# ╟─a607940b-82f7-4f0c-a4eb-0d7c210bace4
-# ╟─cd17aee4-da21-48e5-a8ce-03fb3bc5bcd8
-# ╟─d651bae7-8e3f-469c-babd-be11284a87b1
 # ╟─fb24eaaa-a121-4806-b2f6-4a3305e0d313
-# ╟─4bbf0c5d-83b1-430a-94c4-01d080b833d7
 # ╟─c529b6c7-830f-474f-81da-61c462b2cde2
 # ╟─cc62299f-3552-47c8-a428-2efec54a5255
-# ╟─cfa130b1-e9c2-48f4-8722-6cf4432c6eb1
-# ╟─e60fb77c-a10a-4933-a04d-a55fe21a1e35
 # ╟─c3e71451-a4dc-4e3e-95a4-e8045d5a8121
 # ╟─fed8f352-6cbf-4485-9520-82c61287dd3a
-# ╟─c7696898-d484-41c4-9b9e-d73716f19afe
-# ╟─9882ca60-56eb-4afd-990e-31c836681892
-# ╟─c262eab9-3acf-4bcc-9726-579dc9c95e49
-# ╟─3d14008c-894b-44c4-892d-8d3c558fe495
 # ╟─5b894f17-9285-42a6-a051-5c9fc39e93e5
 # ╟─64722cbd-00e1-4e2b-9f83-65a621350515
-# ╟─3d6287a2-b8d7-490c-bd13-e3685619d91e
 # ╟─5c657633-1e7c-4a11-ab10-c3e0914786e6
-# ╟─979c8539-d367-4908-8aad-7dc8814d7fee
-# ╟─c0f19650-6203-4354-97c6-ed40ee0c0d42
 # ╟─eee3b87c-ecba-4d26-86aa-f6891184d409
 # ╟─908048b0-6aa4-4ae1-af13-d0687b1b87df
 # ╟─6513f105-ad60-44b2-8867-bc7dd189baf0
 # ╠═4d8bd3fe-67de-488f-b233-0d72bc22ef01
 # ╟─0248ddaf-fc17-429d-9db1-bdf34f042c87
-# ╟─a43fdb96-551a-4b52-8a3b-bdca9d248b40
-# ╟─cbdf0875-9727-4c5d-b350-807584af396b
-# ╟─18bace15-fe02-43f7-b828-1357855b2285
-# ╟─06797c4e-8bdc-4f49-8134-d09c923d9f92
 # ╟─ca40e0a1-1a12-496d-8acc-2fc42d95ea54
 # ╟─30774495-5626-4a9c-9ff8-2a0d5f43fb2b
 # ╟─c8168f17-29fd-4106-aaae-2136cda1ed7d
@@ -2538,55 +2520,29 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 # ╟─20391854-bd19-4874-9724-1926fcb66e57
 # ╠═aae881a0-4022-48ec-abfc-17d8fe70e917
 # ╟─56da606e-a7b1-43e7-ae7b-26dff3386883
-# ╟─cd0bc73a-da5d-40ee-95ab-f65973b0b56e
-# ╟─7efbd237-9f39-4914-9709-9bafc73cffde
-# ╟─896eb951-473a-46bc-a404-c5ff08407b58
 # ╟─188410e3-71ff-4a4f-945b-f033b84aa48a
-# ╟─6c37f3a3-e546-4be7-9c21-05ce9e9dcc4b
-# ╟─77730803-121d-4f89-83a2-1f1fd4604e3f
-# ╟─f952d596-4b4b-4f09-a68f-00bc458dae8e
-# ╟─4a4ff030-72f5-4b85-98e7-06292c6dadcd
 # ╟─0d704100-65c7-4ccc-9ff9-00875828ecc2
-# ╟─bec0e730-a6ab-4ee8-9094-98a63de4976e
-# ╟─3fe14482-4640-4d3e-9b96-191e396735d7
 # ╟─8b8df017-5118-4aeb-ae58-dfa8aa6f098f
-# ╟─483adc8a-f76c-4bb5-a06a-0cddb722132c
 # ╟─f7682db7-7b44-4834-be19-95d142f1086a
 # ╟─f29c9c12-80c9-4b43-9047-febe6af16cb3
 # ╟─cd08e6e0-d5c6-40a7-a613-e6d872463c75
 # ╟─46b42a51-a407-49fb-9a63-a1d85b5e99a6
 # ╠═fcb74759-7c25-4eeb-9559-b2acc40d7b12
 # ╟─fe12e052-d42d-414f-acb9-a13b200a3415
-# ╟─6c819691-4042-4e0a-8123-93be47945d50
 # ╟─13ff71e4-2b29-4370-a76b-d6021114c40d
 # ╟─42f3bedc-203b-41c9-a990-8eb1185d99bf
-# ╟─eea700b3-d6aa-4c3f-9bd2-be762521a666
-# ╟─c2657fe2-e2f7-4fc9-976b-91f1ed6d90d3
-# ╟─7e300fce-3121-45b0-8ec3-a9bcfb251517
 # ╟─d9ea88ae-603a-490a-adbe-ae345e204997
-# ╟─e1fab095-657b-4ae5-9a5c-4f8922afa706
-# ╟─8aaa21d4-fc15-4d5c-b8b5-caa2b3309c5c
-# ╟─83381c78-db82-476a-8b59-866fe2464b40
 # ╟─970fe899-da9e-4527-acc0-24e09ae466c7
-# ╟─feaee9e6-015e-4ad5-ba57-f814f15fd447
-# ╟─97a52e3a-d30f-48b4-ac6b-23ba7bb9731e
 # ╟─96012b93-adbc-4278-8782-03902ca11da0
-# ╟─952a79d9-4cc4-42cb-b483-108e36fbff4d
-# ╟─d943a609-adf3-4689-8ecb-a8f7098f842c
 # ╟─9642c12e-2331-49c6-b03f-a0f2146bba4f
-# ╟─ff7446ea-7970-49f5-9ee4-54b0d4df10f4
 # ╟─93d19f90-07ff-4254-bc87-6ffbe96a037b
 # ╟─d348e194-e32d-4ec3-89b8-f83b715c1649
 # ╟─07b93c40-2e4a-40d9-b62b-88a1fc6387b6
-# ╟─609c5df1-5829-4882-8c6c-fca3f2c723d0
-# ╟─6705082f-5052-486c-b83d-af8a835e9d7e
 # ╟─7908a869-8dae-41de-a180-14b2d3430935
 # ╟─75b207b0-4a5c-4ad3-9ce6-ed6d4cddcada
 # ╟─de17c141-b4f6-4de2-9c86-72878bc94b83
 # ╟─92fd59d6-399f-452c-8b04-8622a1716750
 # ╟─7c2c5ddd-01b1-4c63-b746-b49e21df4ead
-# ╟─dd6dd7f9-753c-4236-8de5-f9a520a64740
-# ╟─fb8448d9-728f-4ba1-a0f5-187b373daeea
 # ╟─9905da5d-0557-400a-9734-e86e6955df42
 # ╟─360a7486-81bc-48dc-aa62-c0b5c0872181
 # ╠═982adfe4-b7f5-40d8-89fa-ed257c9e9a92
@@ -2595,18 +2551,10 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 # ╟─0652e2de-f7c2-4490-8d84-e0f92f2fb3d7
 # ╟─6e84e237-96f3-4436-b71b-2c456cfde91d
 # ╟─c7c16b38-61f3-4881-86fe-fc3a1e946720
-# ╟─6a41b023-0030-40b8-9713-dce878f78dbf
-# ╟─e3b03b06-c92a-4747-baff-867d18fb7d69
-# ╟─7b002f8e-5b5d-4382-bb87-974a9a0d3f40
-# ╟─f04562e5-73eb-45d7-8610-4b10bb1ce56a
 # ╟─d7174b1b-a3bb-48b7-b389-1ec78a2a5943
 # ╟─eeec5781-85e4-4de0-b58e-e40d40fb7bc6
 # ╟─c66bf5f0-3280-465f-bd97-a0ea5ce912bd
-# ╟─4f5d6dfa-c5e3-4a64-aab0-bc70eae6a994
-# ╟─ca2c8560-f070-4cda-b2fa-d53dc0d55fee
-# ╟─d324be23-bb51-453c-90ad-d2266e10bbc9
 # ╟─a21a80d6-3f2f-4406-bca7-d258d17c5e15
-# ╟─57084ebf-f9b4-4b8e-9e61-683543e9f5fd
 # ╟─a8328fbd-c907-4295-8d1e-66a28cea44d9
 # ╟─0c9c30f6-93f4-43cf-862c-b68a10faa214
 # ╟─0d423844-37e4-415f-bc80-3c3150575182
@@ -2615,5 +2563,57 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 # ╟─c8f9dee0-176f-4e5a-b8d5-02ee395a0adc
 # ╟─73f8d20a-04b1-4641-9a6a-324b318adbfd
 # ╟─e8ee54b4-b00f-4d21-a491-c23793fae91d
+# ╟─18b58ecf-0d11-4625-91b4-cca974fca62f
+# ╟─a607940b-82f7-4f0c-a4eb-0d7c210bace4
+# ╟─cd17aee4-da21-48e5-a8ce-03fb3bc5bcd8
+# ╟─d651bae7-8e3f-469c-babd-be11284a87b1
+# ╟─4bbf0c5d-83b1-430a-94c4-01d080b833d7
+# ╟─cfa130b1-e9c2-48f4-8722-6cf4432c6eb1
+# ╟─e60fb77c-a10a-4933-a04d-a55fe21a1e35
+# ╟─c7696898-d484-41c4-9b9e-d73716f19afe
+# ╟─9882ca60-56eb-4afd-990e-31c836681892
+# ╟─c262eab9-3acf-4bcc-9726-579dc9c95e49
+# ╟─3d14008c-894b-44c4-892d-8d3c558fe495
+# ╟─3d6287a2-b8d7-490c-bd13-e3685619d91e
+# ╟─979c8539-d367-4908-8aad-7dc8814d7fee
+# ╟─c0f19650-6203-4354-97c6-ed40ee0c0d42
+# ╟─a43fdb96-551a-4b52-8a3b-bdca9d248b40
+# ╟─cbdf0875-9727-4c5d-b350-807584af396b
+# ╟─18bace15-fe02-43f7-b828-1357855b2285
+# ╟─06797c4e-8bdc-4f49-8134-d09c923d9f92
+# ╟─cd0bc73a-da5d-40ee-95ab-f65973b0b56e
+# ╟─7efbd237-9f39-4914-9709-9bafc73cffde
+# ╟─896eb951-473a-46bc-a404-c5ff08407b58
+# ╟─6c37f3a3-e546-4be7-9c21-05ce9e9dcc4b
+# ╟─77730803-121d-4f89-83a2-1f1fd4604e3f
+# ╟─f952d596-4b4b-4f09-a68f-00bc458dae8e
+# ╟─4a4ff030-72f5-4b85-98e7-06292c6dadcd
+# ╟─bec0e730-a6ab-4ee8-9094-98a63de4976e
+# ╟─3fe14482-4640-4d3e-9b96-191e396735d7
+# ╟─483adc8a-f76c-4bb5-a06a-0cddb722132c
+# ╟─6c819691-4042-4e0a-8123-93be47945d50
+# ╟─eea700b3-d6aa-4c3f-9bd2-be762521a666
+# ╟─c2657fe2-e2f7-4fc9-976b-91f1ed6d90d3
+# ╟─7e300fce-3121-45b0-8ec3-a9bcfb251517
+# ╟─e1fab095-657b-4ae5-9a5c-4f8922afa706
+# ╟─8aaa21d4-fc15-4d5c-b8b5-caa2b3309c5c
+# ╟─83381c78-db82-476a-8b59-866fe2464b40
+# ╟─feaee9e6-015e-4ad5-ba57-f814f15fd447
+# ╟─97a52e3a-d30f-48b4-ac6b-23ba7bb9731e
+# ╟─952a79d9-4cc4-42cb-b483-108e36fbff4d
+# ╟─d943a609-adf3-4689-8ecb-a8f7098f842c
+# ╟─ff7446ea-7970-49f5-9ee4-54b0d4df10f4
+# ╟─609c5df1-5829-4882-8c6c-fca3f2c723d0
+# ╟─6705082f-5052-486c-b83d-af8a835e9d7e
+# ╟─dd6dd7f9-753c-4236-8de5-f9a520a64740
+# ╟─fb8448d9-728f-4ba1-a0f5-187b373daeea
+# ╟─6a41b023-0030-40b8-9713-dce878f78dbf
+# ╟─e3b03b06-c92a-4747-baff-867d18fb7d69
+# ╟─7b002f8e-5b5d-4382-bb87-974a9a0d3f40
+# ╟─f04562e5-73eb-45d7-8610-4b10bb1ce56a
+# ╟─4f5d6dfa-c5e3-4a64-aab0-bc70eae6a994
+# ╟─ca2c8560-f070-4cda-b2fa-d53dc0d55fee
+# ╟─d324be23-bb51-453c-90ad-d2266e10bbc9
+# ╟─57084ebf-f9b4-4b8e-9e61-683543e9f5fd
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
