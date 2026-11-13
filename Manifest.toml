@@ -2,7 +2,7 @@
 
 julia_version = "1.13.3"
 manifest_format = "2.1"
-project_hash = "13630626ad233bcab6cc4424c6c10f6491787034"
+project_hash = "bcb7b0c2f015eb5bb9ac6acc33636c7a36334ac7"
 
 [[deps.AbstractPlutoDingetjes]]
 git-tree-sha1 = "e71ee7b4aa06b045259a7d6101e1cb45ad140bce"

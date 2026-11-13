@@ -129,6 +129,16 @@ Write a prediction before running. State the one input you change, the inputs yo
 # ╔═╡ 0edd324f-4721-4462-9f51-50bd01f99929
 notebook_link(joinpath(@__DIR__, "notebooks", "05_your_investigation.pluto.jl"), "Afternoon 5 (notebook 05)")
 
+# ╔═╡ 0f37b6ff-af2a-46f6-b7bc-579c8e690677
+WideCell(md"""
+### Afternoon 5b — Real microtubules: from a movie to a model
+
+Build kymographs from microscope movies of Mireia Andreu-Carbó (University of Geneva), measure the rates as in afternoon 2, and test model A on real microtubules: first with a few kymographs traced by hand, then with 46. Then compare with two papers of the University of Geneva on the motor kinesin-1, and, optionally, with their model of rescue at exchange sites along the shaft.
+""")
+
+# ╔═╡ ac8949ee-d8d6-48e9-9532-6f31d5dd28b9
+notebook_link(joinpath(@__DIR__, "notebooks", "05b_rescue_rate_or_place.pluto.jl"), "Afternoon 5b (notebook 05b)")
+
 # ╔═╡ 2a168fea-2bc7-4575-adc4-9eade3d9c3e1
 WideCell(md"""
 ## Report
@@ -513,6 +523,8 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 # ╟─296f3952-c3c1-44d4-943d-c7c2a1a194fa
 # ╟─acad59ec-e4f4-4e46-8ac7-8640d7fc4fc2
 # ╟─0edd324f-4721-4462-9f51-50bd01f99929
+# ╟─0f37b6ff-af2a-46f6-b7bc-579c8e690677
+# ╟─ac8949ee-d8d6-48e9-9532-6f31d5dd28b9
 # ╟─2a168fea-2bc7-4575-adc4-9eade3d9c3e1
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

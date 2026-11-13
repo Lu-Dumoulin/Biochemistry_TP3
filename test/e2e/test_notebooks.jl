@@ -77,3 +77,47 @@ end
         end
     end
 end
+
+# Part I of 05b reads and writes `data/movies/`. This test runs it in a temporary copy of the
+# course folder, with a synthetic movie and a saved trace, and a ready-made kymograph with an
+# automatic tracing, so that the movie tools, the rates tables and model A all run on them.
+@testset "Notebook 05b turns a saved movie trace into rates" begin
+    include(joinpath(@__DIR__, "..", "support", "load.jl"))
+    # Arrange
+    root = joinpath(@__DIR__, "..", "..")
+    tmp = mktempdir()
+    cp(joinpath(root, "src"), joinpath(tmp, "src"))
+    mkpath(joinpath(tmp, "notebooks"))
+    cp(joinpath(root, "notebooks", "05b_rescue_rate_or_place.pluto.jl"), joinpath(tmp, "notebooks", "05b.pluto.jl"))
+    cp(joinpath(root, "Notebook.pluto.jl"), joinpath(tmp, "Notebook.pluto.jl"))
+    movies = mkpath(joinpath(tmp, "data", "movies"))
+    write_test_tiff(joinpath(movies, "test_movie.tif"), growing_microtubule(; frames=40, width=80))
+    key = line_key("test_movie.tif", (15, 10, 15, 70))
+    write_table(joinpath(movies, "settings.csv"), "movie,channel,um_per_px,s_per_frame,condition,include",
+                [["test_movie.tif", 1, 0.1, 2.0, "growing", true]])
+    write_table(joinpath(movies, "lines.csv"), "movie,row1,col1,row2,col2", [["test_movie.tif", 15, 10, 15, 70]])
+    write_table(joinpath(movies, "traces.csv"), "movie,line,row,col",
+                [["test_movie.tif", key, r, c] for (r, c) in [(1, 10), (25, 35), (27, 10), (40, 23)]])
+    # a ready-made kymograph with only an automatic (reference) tracing, used for the rates
+    ready = mkpath(joinpath(tmp, "data", "kymographs_movies"))
+    write(joinpath(ready, "k1.png"), png_bytes(gray8(Float32[t <= 20 + c ? 1 : 0 for t in 1:40, c in 1:30])))
+    write_table(joinpath(ready, "kymographs.csv"), "file,movie,line,row1,col1,row2,col2,um_per_px,s_per_frame,condition,seed_col",
+                [["k1.png", "movie Z", 1, 1, 1, 1, 30, 0.1, 3.0, "ready", 1]])
+    write_table(joinpath(ready, "reference_traces.csv"), "file,row,col",
+                [["k1.png", r, c] for (r, c) in [(1, 1), (20, 20), (22, 1), (40, 10)]])
+    session = Pluto.ServerSession()
+    session.options.server.disable_writing_notebook_files = true
+
+    # Act
+    nb = Pluto.SessionActions.open(session, joinpath(tmp, "notebooks", "05b.pluto.jl"); run_async=false)
+    errored = [first(c.code, 80) for c in nb.cells if c.errored]
+    outputs = [string(c.output.body) for c in nb.cells]          # wide cells hold their HTML inside
+    Pluto.SessionActions.shutdown(session, nb; keep_in_session=false)
+
+    # Assert: one kymograph, one catastrophe, in the rates table; the saved line was kept.
+    @test isempty(errored)
+    @test any(b -> occursin("growing", b) && occursin("shrinkage speed", b), outputs)
+    @test any(b -> occursin("the movies, 1 kymographs", b) && occursin("shrinkage speed", b), outputs)
+    @test read_table(joinpath(movies, "lines.csv")) == [["test_movie.tif", "15", "10", "15", "70"]]
+    rm(tmp; recursive=true)
+end

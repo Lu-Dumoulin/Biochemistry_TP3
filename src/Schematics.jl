@@ -9,7 +9,7 @@ module Schematics
 
 export levels_schematic, kymograph_schematic, two_state_schematic, decision_schematic,
        course_map_schematic, notebook_link, segments_schematic, chain_events_schematic,
-       gillespie_schematic, pulse_schematic, chain_schematic
+       gillespie_schematic, pulse_schematic, chain_schematic, rescue_models_schematic
 
 # Percent-encodes a file path for a URL query, so that links survive spaces and accents
 # (e.g. a folder under "OneDrive - Université de Genève").
@@ -492,6 +492,52 @@ function chain_schematic(chain; seeded=true)
     isempty(chain) && print(b, """<text class="small muted" x="$x" y="25">empty</text>""")
     print(b, """<text class="small muted" x="$(x + 6)" y="25">+ end</text>""")
     return svg(max(x + 50, 200), 40, String(take!(b)); label="T/D chain with $(length(chain)) subunits")
+end
+
+"""
+    rescue_models_schematic()
+
+The two descriptions of rescue compared in afternoon 5b: a constant rescue rate anywhere
+(Dogterom–Leibler, afternoons 1–2) versus rescue only at exchanged sites along the shaft
+(Schaer et al. 2023), which kinesin-1 creates by damaging the lattice.
+"""
+function rescue_models_schematic()
+    w = 19
+    b = IOBuffer()
+    x0 = 205
+    lattice(y, chain) = for (i, c) in enumerate(chain)
+        cls = c == 'T' ? "T" : c == 'X' ? "X" : "D"
+        fill = cls == "X" ? "#1b9e77" : ""
+        print(b, cls == "X" ? """<rect x="$(x0 + (i - 1) * w)" y="$y" width="$(w - 3)" height="22" rx="3" fill="#1b9e77"/>""" :
+                 """<rect class="$cls" x="$(x0 + (i - 1) * w)" y="$y" width="$(w - 3)" height="22" rx="3"/>""")
+    end
+    # Model A
+    print(b, """<text class="title" x="10" y="30">A · constant rate</text>
+    <text class="small muted" x="10" y="48">afternoons 1–2</text>
+    <rect class="seed" x="$(x0 - 34)" y="22" width="30" height="22" rx="3"/>""")
+    lattice(22, "DDDDDDDDDDDDDDDDDDDD")
+    print(b, """<path class="S" d="M$(x0 + 20 * w + 30),33 h-40" fill="none" stroke-width="2" marker-end="url(#rm-S)"/>
+    <text class="small" x="$(x0 + 20 * w + 40)" y="38">shrinking</text>
+    <text class="small" x="$x0" y="70">a rescue can happen anywhere, at rate k_res</text>""")
+    for i in (4, 9, 14)
+        print(b, """<line x1="$(x0 + (i - 1) * w + 8)" y1="16" x2="$(x0 + (i - 1) * w + 8)" y2="50" stroke="#868e99" stroke-dasharray="3 3"/>""")
+    end
+    # Model B
+    yB = 110
+    print(b, """<text class="title" x="10" y="$(yB + 8)">B · exchange sites</text>
+    <text class="small muted" x="10" y="$(yB + 26)">Schaer et al. 2023</text>
+    <rect class="seed" x="$(x0 - 34)" y="$yB" width="30" height="22" rx="3"/>""")
+    lattice(yB, "DDXDDDDDDXDDDDDDDDDD")
+    print(b, """<path class="S" d="M$(x0 + 20 * w + 30),$(yB + 11) h-40" fill="none" stroke-width="2" marker-end="url(#rm-S)"/>
+    <text class="small" x="$(x0 + 20 * w + 40)" y="$(yB + 16)">shrinking</text>
+    <ellipse cx="$(x0 + 6 * w + 8)" cy="$(yB - 12)" rx="16" ry="9" fill="#e6a117"/>
+    <path d="M$(x0 + 6 * w + 24),$(yB - 12) h34" stroke="#e6a117" stroke-width="2" marker-end="url(#rm-T)"/>
+    <text class="small" x="$(x0 + 6 * w + 66)" y="$(yB - 8)">kinesin-1 walks to the + end and damages the lattice</text>
+    <text class="small" x="$x0" y="$(yB + 48)">repair inserts GTP-tubulin (exchanged site, green): only there</text>
+    <text class="small" x="$x0" y="$(yB + 66)">can a shrinking microtubule be rescued, with probability p_res</text>""")
+    print(b, """<defs><marker id="rm-T" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e6a117"/></marker></defs>""")
+    return svg(780, 190, markers("rm") * String(take!(b));
+               label="Two models of rescue: a constant rate anywhere, or only at exchanged sites created by kinesin damage")
 end
 
 end # module

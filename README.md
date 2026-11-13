@@ -11,8 +11,9 @@ Last week you watched microtubules grow and shrink under the microscope. This we
 | 3 | Can switching emerge from subunit chemistry? | `03_subunits_and_hydrolysis` |
 | 4 | Can nearly constant length coexist with material flow? | `04_two_ends_and_treadmilling` |
 | 5 | What question can we answer with one controlled comparison? | `05_your_investigation` |
+| 5b | Real microtubules: from a movie to a model (Mireia Andreu-Carbó's movies, then the papers of Schaer et al. 2023 and Andreu-Carbó et al. 2022) | `05b_rescue_rate_or_place` |
 
-All notebooks are reachable from the course home page, `Notebook.pluto.jl`.
+All notebooks are reachable from the course home page, `Notebook.pluto.jl`. Part II of afternoon 5b also needs the kymographs cropped from the papers (folder `data/kymographs_paper/`): they are published figures, so they are not on this page; the instructor gives them to you.
 
 ---
 
@@ -114,9 +115,10 @@ Folder contents:
 
 * `Notebook.pluto.jl` — course home page.
 * `notebooks/` — course guide (`00`) and the five afternoons (`01`–`05`); the student manual is merged into them.
+* `notebooks/05b_rescue_rate_or_place.pluto.jl` — afternoon 5b, real microtubules. Part I: from Mireia Andreu-Carbó's movies to kymographs (lines detected automatically and corrected by the students; kymographs traced by hand), rates and model A; then 46 ready-made kymographs with an automatic tracing to check and correct; then the students' own movies (kept with all their traces and seed positions in `data/movies/`, git-ignored). Part II: the papers of Schaer et al. 2023 and Andreu-Carbó et al. 2022, with the six kymographs of Fig. 2A–C of the first one and a reference tracing to correct. Part III: model B, rescue at exchange sites, presented as the afternoon 3 chain with three changes. On every kymograph a dashed line marks the end of the seed; the students move it and press *Set seed*. The notebook exports a segment table for notebook 02.
 * `src/MTLab.jl` — the two teaching models (effective switching model; exact Gillespie T/D chain) and the analysis helpers. Plain Julia, standard library only.
-* `src/Schematics.jl` — SVG schematics; `src/Widgets.jl` — the ◀ previous / next ▶ stepper; `src/Experiment.jl` — the experiment designer of afternoon 5.
-* `data/` — the synthetic fallback segment table (clearly labeled, not experimental) and the empty template for students' own kymograph measurements.
+* `src/Schematics.jl` — SVG schematics; `src/Widgets.jl` — the ◀ previous / next ▶ stepper and the click tool for kymographs; `src/Movies.jl` — TIF stack reader, microtubule detection, kymographs and PNG encoding (standard library only); `src/Experiment.jl` — the experiment designer of afternoon 5.
+* `data/` — the synthetic fallback segment table (clearly labeled, not experimental) and the empty template for students' own kymograph measurements; `test_movie/` (two movies) and `kymographs_movies/` (46 kymographs, their calibration and an automatic tracing) by Mireia Andreu-Carbó, University of Geneva, under CC BY 4.0 (see the README in each folder); `kymographs_paper/` (git-ignored) holds the kymographs cropped from the papers, with their calibration and reference tracing; it is given to the students separately.
 * `figures/` — Figure 1 of the original manual.
 * `test/` — test suite.
 
@@ -130,7 +132,7 @@ julia --project=. test/runtests.jl unit               # models, analysis, schema
 julia --project=. test/runtests.jl e2e                # runs every notebook headlessly (~2.5 min)
 ```
 
-The unit tests check deterministic limits, exact length/end-count bookkeeping, seeded regrowth and absorbing extinction, Poisson addition and exponential hydrolysis statistics, the Dogterom–Leibler mean length, the treadmilling fluxes and synthetic-data estimates of the instructor guide, and the predictable controls of afternoon 5. The end-to-end tests open every notebook (and afternoon 5 from each starting point with a written prediction) and fail on any cell error or failed text interpolation.
+The unit tests check deterministic limits, exact length/end-count bookkeeping, seeded regrowth and absorbing extinction, Poisson addition and exponential hydrolysis statistics, the Dogterom–Leibler mean length, the treadmilling fluxes and synthetic-data estimates of the instructor guide, the predictable controls of afternoon 5, and for afternoon 5b the rescue-at-exchange-sites model, the TIFF reader, microtubule detection, kymographs, seed estimate and the click tool. The end-to-end tests open every notebook (afternoon 5 from each starting point with a written prediction, afternoon 5b with a synthetic movie and saved traces) and fail on any cell error or failed text interpolation.
 
 **Editing notebooks.** Close a notebook in Pluto before editing its file with another tool: Pluto rewrites the file when it saves.
 
@@ -138,4 +140,6 @@ Tested with Julia 1.13 and Pluto 1.0.4.
 
 ## Licence
 
-[MIT](LICENSE) © 2026 Ludovic Dumoulin.
+Code and notebooks: [MIT](LICENSE) © 2026 Ludovic Dumoulin.
+
+Movies and kymographs in `data/test_movie/` and `data/kymographs_movies/`: © 2020 Mireia Andreu-Carbó, University of Geneva, under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit her when you reuse them.

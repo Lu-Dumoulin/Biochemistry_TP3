@@ -1,1 +1,7 @@
 .DS_Store
+
+# Kymographs cropped from Schaer et al., Biophys. J. 2023, Fig. 2 (copyright Biophysical Society).
+# Teaching use only: do not commit until replaced by the original kymographs.
+data/kymographs_paper/
+# Students' own movies and traces (large files, personal work).
+data/movies/

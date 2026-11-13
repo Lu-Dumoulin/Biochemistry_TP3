@@ -18,7 +18,9 @@ export switch_decision, simulate_switching, switching_statistics, switching_regi
        ChainParameters, with, simulate_chain, trace_events, end_currents,
        DYNAMIC_INSTABILITY, TREADMILLING,
        count_collapses, material_image, chain_csv,
-       read_segments, summarize_segments, bootstrap_tracks, simulated_segments
+       read_segments, summarize_segments, bootstrap_tracks, simulated_segments,
+       kymograph_segments, poisson_interval, dl_prediction, growth_shrink_pairs, pair_correlation,
+       simulate_res, phase_segments, switching_rescue_fraction
 
 check_rates(values...) = all(x -> isfinite(x) && x >= 0, values) ||
     throw(ArgumentError("Rates must be finite and non-negative."))
@@ -549,6 +551,259 @@ function simulated_segments(result; track="sim", condition="simulation")
         end
     end
     return rows
+end
+
+# --- Afternoon 5b: kymographs from the paper, and rescue at exchange sites ---------------
+# Schaer, Andreu-Carbó, Kruse & Aumeier, Biophys. J. 122, 346–359 (2023).
+
+"""
+    kymograph_segments(corners; px_per_um, px_per_min, condition, track,
+                       seed_um=0.5, pause_um=0.3, source, seed_col=nothing)
+
+Turns the corners of a traced kymograph edge into rows of the segment table of afternoon 2.
+`corners` are `(row, col)` pixel pairs in time order (row = time from the top, col = position
+from the left). The seed ends at column `seed_col`, or, if it is not given, at the leftmost
+corner. Between two corners the tip grows
+(G) or shrinks (S); a change smaller than `pause_um` is a pause, attached to the current state,
+or, at the seed, excluded (no microtubule). A shrinkage ending within `seed_um` of the seed is
+a return to the seed, otherwise a rescue. The last segment is censored unless it reaches the
+seed. Returns `(; rows, points, warnings)` with `points` the corners as (time in s, length in µm).
+"""
+function kymograph_segments(corners; px_per_um, px_per_min, condition="", track="1",
+                            seed_um=0.5, pause_um=0.3, source="traced kymograph", seed_col=nothing)
+    warnings = String[]
+    pts = collect(corners)
+    if !issorted(pts; by=first)
+        push!(warnings, "Corners were not in time order: they have been sorted from top to bottom.")
+        sort!(pts; by=first)
+    end
+    length(pts) >= 2 || return (; rows=NamedTuple[], points=Tuple{Float64,Float64}[],
+                                 warnings=push!(warnings, "Click at least two corners."))
+    seed = seed_col === nothing ? minimum(last, pts) : seed_col
+    tL = [((r - first(pts)[1]) / px_per_min * 60, max(c - seed, 0) / px_per_um) for (r, c) in pts]
+    # pieces between corners, with state :G, :S, or :pause (no microtubule, at the seed)
+    pieces = Tuple{Symbol,Float64,Float64,Float64,Float64}[]
+    for k in 1:length(tL) - 1
+        (t1, L1), (t2, L2) = tL[k], tL[k + 1]
+        t2 > t1 || (push!(warnings, "Two corners on the same row were skipped."); continue)
+        state = abs(L2 - L1) <= pause_um ? (max(L1, L2) <= seed_um ? :pause :
+                (isempty(pieces) ? :G : pieces[end][1] == :pause ? :G : pieces[end][1])) :
+                (L2 > L1 ? :G : :S)
+        if !isempty(pieces) && pieces[end][1] == state
+            s, ta, La, _, _ = pieces[end]
+            pieces[end] = (s, ta, La, t2, L2)
+        else
+            push!(pieces, (state, t1, L1, t2, L2))
+        end
+    end
+    rows = NamedTuple[]
+    for (k, (state, t1, L1, t2, L2)) in enumerate(pieces)
+        state == :pause && continue
+        nxt = findnext(p -> p[1] != :pause, pieces, k + 1)
+        ending = if state == :G
+            nxt === nothing ? "censored" : "catastrophe"
+        else
+            L2 <= seed_um ? "seed_restart" : (nxt === nothing ? "censored" : "rescue")
+        end
+        push!(rows, (; condition, track=string(track), state=string(state), duration_s=t2 - t1,
+                     delta_length_um=L2 - L1, end_event=ending, source))
+    end
+    return (; rows, points=tL, warnings)
+end
+
+"""
+    poisson_interval(k)
+
+Approximate 95 % interval for the mean of a Poisson count `k` (Wilson–Hilferty). Divide by the
+time at risk to get an interval for a rate.
+"""
+function poisson_interval(k)
+    lo = k == 0 ? 0.0 : k * (1 - 1 / (9k) - 1.96 / (3 * sqrt(k)))^3
+    hi = (k + 1) * (1 - 1 / (9 * (k + 1)) + 1.96 / (3 * sqrt(k + 1)))^3
+    return (lo, hi)
+end
+
+"""
+    dl_prediction(; vg, vs, catastrophe, rescue)
+
+Dogterom–Leibler predictions with a seed, as used in Schaer et al. (2023): control parameter
+r = vg·k_res / (vs·k_cat); for r < 1 the mean length vg / (k_cat (1 − r)), the probability that
+a shrinkage reaches the seed P_cd = 1 − r, and the correlation between a growth length and
+the next shrinkage length C_gs = (1 − r) / (1 + r); for r > 1 the mean growth velocity.
+"""
+function dl_prediction(; vg, vs, catastrophe, rescue)
+    r = vg * rescue / (vs * catastrophe)
+    bounded = r < 1
+    return (; r, bounded,
+            mean_length=bounded ? vg / (catastrophe * (1 - r)) : Inf,
+            p_complete=bounded ? 1 - r : 0.0,
+            correlation=bounded ? (1 - r) / (1 + r) : 0.0,
+            growth_velocity=bounded ? 0.0 : (r - 1) * vs * catastrophe / (catastrophe + rescue))
+end
+
+"""
+    growth_shrink_pairs(rows)
+
+Pairs (growth length, length of the next shrinkage) in µm, for each completed growth phase
+(ending in a catastrophe) followed by a completed shrinkage (ending in a rescue or at the seed),
+within the same track.
+"""
+function growth_shrink_pairs(rows)
+    g = Float64[]; s = Float64[]
+    for k in 1:length(rows) - 1
+        a, b = rows[k], rows[k + 1]
+        if a.track == b.track && a.condition == b.condition && a.state == "G" &&
+           a.end_event == "catastrophe" && b.state == "S" && b.end_event != "censored"
+            push!(g, a.delta_length_um); push!(s, -b.delta_length_um)
+        end
+    end
+    return (; growth=g, shrink=s)
+end
+
+"Pearson correlation; `NaN` with fewer than three pairs."
+pair_correlation(x, y) = length(x) < 3 ? NaN : cor(x, y)
+
+"""
+    simulate_res(; ka=2, kd=27, kcat=0.005, pres=0.15, khyd=0.125, kx=1e-5, khydx=0.125e-3,
+                   site_nm=8, t_end=2700, sample_dt=3, seed=1, record_lattice=false,
+                   max_events=20_000_000)
+
+The model of Schaer et al. (2023) without explicit motors: a lattice on a protected seed whose
+sites are T (GTP), D (GDP) or Tx (GTP after exchange). The lattice as a whole grows (adds T at
+rate `ka`) or shrinks (removes the tip site at rate `kd`); catastrophes happen at rate `kcat`
+whatever the tip. T → D at `khyd`, D → Tx at `kx` (exchange along the shaft; motors increase it),
+Tx → D at `khydx`. After each removal, if the new tip is Tx, the lattice is rescued with
+probability `pres`. Reaching the seed restarts growth; this is not a rescue. Time in s,
+lengths in µm (one site = `site_nm` nm). Default rates: Table 1 of the paper.
+
+Returns `t`, `length`, `growing`, `events` (time, kind), `exposure`, `phases` (one per growth or
+shrinkage phase, with start and end time and length, and how it ended), `rescue_fraction`
+(position of each rescue as a fraction of the length at the preceding catastrophe), and, if
+`record_lattice`, the site states at each sample (0 = D, 1 = T, 2 = Tx).
+"""
+function simulate_res(; ka=2.0, kd=27.0, kcat=0.005, pres=0.15, khyd=0.125, kx=1e-5,
+                      khydx=0.125e-3, site_nm=8.0, t_end=2700.0, sample_dt=3.0, seed=1,
+                      record_lattice=false, max_events=20_000_000)
+    check_rates(ka, kd, kcat, khyd, kx, khydx)
+    0 <= pres <= 1 || throw(ArgumentError("pres is a probability: between 0 and 1."))
+    ts = time_grid(t_end, sample_dt)
+    rng = Xoshiro(seed)
+    lattice = Int8[]                          # 0 = D, 1 = T, 2 = Tx; seed side first
+    counts = [0, 0, 0]                        # number of D, T, Tx sites
+    growing = true
+    t = 0.0
+    um = site_nm / 1000
+    n = length(ts)
+    L = zeros(n); G = falses(n); snaps = Vector{Vector{Int8}}()
+    events = Tuple{Float64,Symbol}[]
+    phases = NamedTuple[]
+    phase_t, phase_L = 0.0, 0
+    catastrophe_L = 0
+    rescue_fraction = Float64[]
+    time_G = 0.0; time_S = 0.0
+    sample = 1
+
+    function close_phase!(t_now, ending)
+        push!(phases, (; state=growing ? :G : :S, t_start=phase_t, t_end=t_now,
+                       L_start=phase_L * um, L_end=length(lattice) * um, end_event=ending))
+        phase_t, phase_L = t_now, length(lattice)
+    end
+    # Change the k-th site (counted from the tip for T, from the seed otherwise) of a given state.
+    function convert!(from, to)
+        k = rand(rng, 1:counts[from + 1])
+        idx = from == 1 ? (length(lattice):-1:1) : (1:length(lattice))
+        for i in idx
+            if lattice[i] == from
+                k -= 1
+                if k == 0
+                    lattice[i] = to; counts[from + 1] -= 1; counts[to + 1] += 1
+                    return
+                end
+            end
+        end
+    end
+
+    rates = zeros(5)
+    finished = false
+    for _ in 1:max_events
+        rates[1] = growing ? ka : kd                 # add a T, or remove the tip
+        rates[2] = growing && !isempty(lattice) ? kcat : 0.0   # catastrophe (needs a lattice)
+        rates[3] = khyd * counts[2]                  # T → D
+        rates[4] = kx * counts[1]                    # D → Tx (exchange)
+        rates[5] = khydx * counts[3]                 # Tx → D
+        total = sum(rates)
+        next_t = t + randexp(rng) / total
+        while sample <= n && ts[sample] < min(next_t, t_end)
+            L[sample] = length(lattice) * um; G[sample] = growing
+            record_lattice && push!(snaps, copy(lattice))
+            sample += 1
+        end
+        dt_state = min(next_t, t_end) - t
+        growing ? (time_G += dt_state) : (time_S += dt_state)
+        if next_t > t_end
+            while sample <= n
+                L[sample] = length(lattice) * um; G[sample] = growing
+                record_lattice && push!(snaps, copy(lattice))
+                sample += 1
+            end
+            close_phase!(t_end, "censored")
+            finished = true
+            break
+        end
+        t = next_t
+        e = choose_event(rng, rates, total)
+        if e == 1 && growing
+            push!(lattice, Int8(1)); counts[2] += 1
+        elseif e == 1
+            removed = pop!(lattice); counts[removed + 1] -= 1
+            if isempty(lattice)
+                close_phase!(t, "seed_restart"); push!(events, (t, :seed_restart)); growing = true
+            elseif lattice[end] == 2 && rand(rng) < pres
+                close_phase!(t, "rescue"); push!(events, (t, :rescue))
+                push!(rescue_fraction, length(lattice) / catastrophe_L); growing = true
+            end
+        elseif e == 2
+            close_phase!(t, "catastrophe"); push!(events, (t, :catastrophe))
+            catastrophe_L = length(lattice); growing = false
+        elseif e == 3
+            convert!(1, 0)
+        elseif e == 4
+            convert!(0, 2)
+        else
+            convert!(2, 0)
+        end
+    end
+    finished || error("Event limit reached. Reduce the duration; results were not truncated silently.")
+    return (; t=ts, length=L, growing=G, events, exposure=(G=time_G, S=time_S), phases,
+            rescue_fraction, lattice=snaps, seed,
+            parameters=(; ka, kd, kcat, pres, khyd, kx, khydx, site_nm, t_end))
+end
+
+"""
+    phase_segments(result; track="sim", condition="simulation")
+
+The phases of a `simulate_res` run as rows of the segment table of afternoon 2.
+"""
+phase_segments(result; track="sim", condition="simulation") =
+    [(; condition, track=string(track), state=string(p.state), duration_s=p.t_end - p.t_start,
+      delta_length_um=p.L_end - p.L_start, end_event=p.end_event, source="SIMULATION")
+     for p in result.phases if p.t_end > p.t_start]
+
+"""
+    switching_rescue_fraction(result)
+
+For a `simulate_switching` run: position of each rescue as a fraction of the length at the
+preceding catastrophe (to compare with `simulate_res`).
+"""
+function switching_rescue_fraction(result)
+    out = Float64[]
+    Lcat = NaN
+    for (t, kind) in result.events
+        i = searchsortedfirst(result.t, t)
+        kind == :catastrophe && (Lcat = result.length[i])
+        kind == :rescue && Lcat > 0 && push!(out, result.length[i] / Lcat)
+    end
+    return out
 end
 
 end # module
